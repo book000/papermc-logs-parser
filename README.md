@@ -73,7 +73,7 @@ the output is:
 
 - The last entry of a file is not emitted (the final `Done` entry above is missing from the output).
 - The time has no date, so entries from different days cannot be told apart.
-- An empty or fully non-matching log makes `python -m src` fail with an `IndexError`.
+- A log with no entries, or only one entry, makes `python -m src` fail with an `IndexError`; a log that starts with a line that is not an entry makes it fail with a `KeyError`.
 
 ## License
 
