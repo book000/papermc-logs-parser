@@ -27,6 +27,13 @@ def test_last_entry_is_included(tmp_path):
     }
 
 
+def test_file_without_header_lines_yields_no_entries(tmp_path):
+    log = tmp_path / "noheader.log"
+    log.write_text("\tat Foo.bar(Foo.java:1)\nplain text\n", encoding="utf-8")
+
+    assert parser(str(log)) == []
+
+
 def test_empty_file_yields_no_entries(tmp_path):
     log = tmp_path / "empty.log"
     log.write_text("", encoding="utf-8")

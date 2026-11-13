@@ -53,7 +53,7 @@ def parser(filepath: str):
             messageList = [result.group(4)]
             rawList = [line]
 
-        if messageList:
+        if info:
             info.update(
                 {"messages": "\n".join(messageList), "raws": "\n".join(rawList)}
             )
