@@ -24,7 +24,7 @@ def main():
         json.dump(logs, f)
 
     dataCount = len(logs)
-    firstTime = logs[0]["time"]
+    firstTime = logs[0]["time"] if logs else None
 
     if firstTime == data["firstTime"]:
         logs = logs[data["count"] :]
