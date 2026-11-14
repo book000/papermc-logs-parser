@@ -19,7 +19,6 @@ def parser(filepath: str):
 
         for line in f:
             line = line.rstrip()
-            print(line)
 
             result = pattern.match(line)
             if result is None:
