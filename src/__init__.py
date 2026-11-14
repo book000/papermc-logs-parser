@@ -23,12 +23,13 @@ def parser(filepath: str):
             result = pattern.match(line)
             if result is None:
                 # not matched
-                messageList.append(line)
-                rawList.append(line)
+                if info:
+                    messageList.append(line)
+                    rawList.append(line)
                 continue
 
             # matched
-            if len(messageList) == 0:
+            if not info:
                 # No previous match (first line)
                 info = {
                     "time": result.group(1),
