@@ -31,7 +31,7 @@ The tool echoes every line of the log file to stdout while parsing, then prints 
 Both files are written to the current working directory.
 
 - `output.json`: all parsed entries as a JSON array.
-- `data.json`: `{"count": <entries parsed>, "firstTime": "<time of the first entry>"}`. On the next run, if the first entry has the same time as `firstTime`, only the entries after the first `count` ones are printed. `output.json` always contains every entry.
+- `data.json`: `{"count": <entries parsed>, "firstTime": "<time of the first entry>"}`. On the next run, if the first entry has the same time as `firstTime`, only the entries after the first `count` ones are printed. `output.json` always contains every entry. When the parser returns no entries, `output.json` is `[]` and the cursor resets to `{"count": 0, "firstTime": null}`.
 
 ### Entry format
 
@@ -73,7 +73,7 @@ the output is:
 
 - The last entry of a file is not emitted (the final `Done` entry above is missing from the output).
 - The time has no date, so entries from different days cannot be told apart.
-- A log with no entries, or only one entry, makes `python -m src` fail with an `IndexError`; a log that starts with a line that is not an entry makes it fail with a `KeyError`.
+- A log that starts with a line that is not an entry can make the CLI fail with a `KeyError`.
 
 ## License
 
