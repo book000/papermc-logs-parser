@@ -53,4 +53,10 @@ def parser(filepath: str):
             messageList = [result.group(4)]
             rawList = [line]
 
+        if info:
+            info.update(
+                {"messages": "\n".join(messageList), "raws": "\n".join(rawList)}
+            )
+            logs.append(info)
+
     return logs
