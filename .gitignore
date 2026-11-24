@@ -1,2 +1,6 @@
 .idea
 venv
+
+output.json
+data.json
+logs/
