@@ -18,7 +18,7 @@ def parser(filepath: str):
         rawList = []
 
         for line in f:
-            line = line.rstrip()
+            line = line.removesuffix("\n")
 
             result = pattern.match(line)
             if result is None:

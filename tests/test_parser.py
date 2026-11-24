@@ -1,6 +1,24 @@
 from src import parser
 
 
+def test_preserves_trailing_whitespace_in_messages_and_raws(tmp_path):
+    log = tmp_path / "whitespace.log"
+    log.write_bytes(
+        b"[12:00:00] [Server thread/INFO]: whitespace  \t\r\n"
+        b"continuation \t\r\n"
+        b"[12:00:01] [Server thread/INFO]: final \t"
+    )
+
+    logs = parser(str(log))
+
+    assert logs[0]["messages"] == "whitespace  \t\ncontinuation \t"
+    assert logs[0]["raws"] == (
+        "[12:00:00] [Server thread/INFO]: whitespace  \t\ncontinuation \t"
+    )
+    assert logs[1]["messages"] == "final \t"
+    assert logs[1]["raws"] == "[12:00:01] [Server thread/INFO]: final \t"
+
+
 def test_last_entry_is_included(tmp_path):
     log = tmp_path / "latest.log"
     log.write_text(
