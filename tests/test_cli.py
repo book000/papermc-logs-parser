@@ -1,4 +1,5 @@
 import ast
+import hashlib
 import json
 import os
 import subprocess
@@ -33,18 +34,49 @@ def messages(entries):
     return [entry["messages"] for entry in entries]
 
 
+def assert_saved_state(directory, log, expected_messages, first_time):
+    content = log.read_bytes()
+    stat = log.stat()
+    assert json.loads((directory / "data.json").read_text()) == {
+        "count": len(expected_messages),
+        "firstTime": first_time,
+        "source": {
+            "path": str(log.resolve()),
+            "device": stat.st_dev,
+            "inode": stat.st_ino,
+        },
+        "size": len(content),
+        "digest": hashlib.sha256(content).hexdigest(),
+    }
+    assert messages(json.loads((directory / "output.json").read_text())) == (
+        expected_messages
+    )
+
+
 def test_append_only_prints_new_entries(tmp_path):
     log = tmp_path / "latest.log"
     log.write_text(FIRST)
     configure(tmp_path, log)
     assert messages(run_cli(tmp_path)) == ["First"]
-    log.write_text(FIRST + SECOND)
+    assert_saved_state(tmp_path, log, ["First"], "12:00:00")
+    with log.open("a") as f:
+        f.write(SECOND)
     assert messages(run_cli(tmp_path)) == ["Second"]
+    assert_saved_state(tmp_path, log, ["First", "Second"], "12:00:00")
     assert run_cli(tmp_path) == []
-    assert messages(json.loads((tmp_path / "output.json").read_text())) == [
-        "First",
-        "Second",
-    ]
+    assert_saved_state(tmp_path, log, ["First", "Second"], "12:00:00")
+
+
+def test_empty_first_run_then_append(tmp_path):
+    log = tmp_path / "latest.log"
+    log.write_text("")
+    configure(tmp_path, log)
+    assert run_cli(tmp_path) == []
+    assert_saved_state(tmp_path, log, [], None)
+    log.write_text(FIRST)
+    assert messages(run_cli(tmp_path)) == ["First"]
+    assert_saved_state(tmp_path, log, ["First"], "12:00:00")
+    assert run_cli(tmp_path) == []
 
 
 def test_replaced_file_resets_cursor(tmp_path):
@@ -56,6 +88,8 @@ def test_replaced_file_resets_cursor(tmp_path):
     replacement.write_text(REPLACEMENT)
     replacement.replace(log)
     assert messages(run_cli(tmp_path)) == ["Replacement"]
+    assert_saved_state(tmp_path, log, ["Replacement"], "12:00:00")
+    assert run_cli(tmp_path) == []
 
 
 def test_truncated_and_rewritten_file_resets_cursor(tmp_path):
@@ -65,6 +99,8 @@ def test_truncated_and_rewritten_file_resets_cursor(tmp_path):
     run_cli(tmp_path)
     log.write_text(REPLACEMENT)
     assert messages(run_cli(tmp_path)) == ["Replacement"]
+    assert_saved_state(tmp_path, log, ["Replacement"], "12:00:00")
+    assert run_cli(tmp_path) == []
 
 
 def test_rewritten_prefix_of_same_size_resets_cursor(tmp_path):
@@ -74,6 +110,7 @@ def test_rewritten_prefix_of_same_size_resets_cursor(tmp_path):
     run_cli(tmp_path)
     log.write_text(FIRST.replace("First", "Other") + SECOND)
     assert messages(run_cli(tmp_path)) == ["Other", "Second"]
+    assert_saved_state(tmp_path, log, ["Other", "Second"], "12:00:00")
 
 
 def test_source_change_resets_cursor(tmp_path):
@@ -85,6 +122,7 @@ def test_source_change_resets_cursor(tmp_path):
     run_cli(tmp_path)
     configure(tmp_path, second)
     assert messages(run_cli(tmp_path)) == ["Replacement"]
+    assert_saved_state(tmp_path, second, ["Replacement"], "12:00:00")
 
 
 def test_legacy_cursor_resets(tmp_path):
@@ -95,3 +133,4 @@ def test_legacy_cursor_resets(tmp_path):
         json.dumps({"count": 1, "firstTime": "12:00:00"})
     )
     assert messages(run_cli(tmp_path)) == ["First"]
+    assert_saved_state(tmp_path, log, ["First"], "12:00:00")
