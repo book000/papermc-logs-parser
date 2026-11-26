@@ -19,7 +19,7 @@ Guidance for AI coding agents and contributors. `CLAUDE.md` imports this file, a
 python -m src      # run from the repository root; needs ./config.json
 ruff check         # lint (CI)
 ruff format --check
-pytest             # CI runs it, but no tests exist yet
+pytest             # run parser and CLI tests (CI)
 ```
 
 Pure Python 3, standard library only; there is no dependency manifest. Do not introduce a dependency without a clear need.

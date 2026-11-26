@@ -24,7 +24,7 @@ Python 3. Only the standard library is used, so there is nothing to install.
    python -m src
    ```
 
-The tool echoes every line of the log file to stdout while parsing, then prints the entries it considers new.
+The tool prints the parsed entries it considers new to stdout.
 
 ### Output files
 
@@ -62,6 +62,13 @@ the output is:
     "level": "INFO",
     "messages": "<Steve> hello",
     "raws": "[12:00:04] [Async Chat Thread - #0/INFO]: <Steve> hello"
+  },
+  {
+    "time": "12:00:05",
+    "threadName": "Server thread",
+    "level": "INFO",
+    "messages": "Done",
+    "raws": "[12:00:05] [Server thread/INFO]: Done"
   }
 ]
 ```
@@ -71,9 +78,8 @@ the output is:
 
 ### Known limitations
 
-- The last entry of a file is not emitted (the final `Done` entry above is missing from the output).
 - The time has no date, so entries from different days cannot be told apart.
-- A log with no entries, or only one entry, makes `python -m src` fail with an `IndexError`; a log that starts with a line that is not an entry makes it fail with a `KeyError`.
+- Lines before the first entry are ignored.
 
 ## License
 
